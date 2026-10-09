@@ -6,7 +6,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/QuantumNous/new-api/types"
+	"github.com/QuantumNous/new-api/relaykit/types"
+	"github.com/QuantumNous/new-api/service"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/require"
 )
@@ -22,7 +23,7 @@ func TestShouldRetry_AwsInvokeBadRequest(t *testing.T) {
 		http.StatusBadRequest,
 	)
 
-	require.True(t, shouldRetry(c, err, 1))
+	require.True(t, service.ShouldRetryRelayError(c, err, 1))
 }
 
 func TestShouldRetry_NormalBadRequestStillNoRetry(t *testing.T) {
@@ -36,5 +37,5 @@ func TestShouldRetry_NormalBadRequestStillNoRetry(t *testing.T) {
 		http.StatusBadRequest,
 	)
 
-	require.False(t, shouldRetry(c, err, 1))
+	require.False(t, service.ShouldRetryRelayError(c, err, 1))
 }
