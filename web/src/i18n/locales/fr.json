@@ -6867,6 +6867,8 @@
     "Zhipu": "Zhipu",
     "Zhipu GLM": "Zhipu GLM",
     "Zhipu V4": "Zhipu V4",
-    "Zoom": "Zoom"
+    "Zoom": "Zoom",
+    "Filter Beta flags unsupported by Bedrock": "Filtrer les indicateurs Beta non pris en charge par Bedrock",
+    "Drop anthropic-beta flags and cache_control scope that AWS Bedrock rejects, so the channel can share traffic with Claude Max": "Supprime les en-têtes anthropic-beta et les scopes cache_control refusés par AWS Bedrock, afin de partager le canal avec Claude Max"
   }
 }

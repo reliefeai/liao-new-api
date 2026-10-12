@@ -6867,6 +6867,8 @@
     "Zhipu": "Zhipu",
     "Zhipu GLM": "Zhipu GLM",
     "Zhipu V4": "Zhipu V 4",
-    "Zoom": "ズーム"
+    "Zoom": "ズーム",
+    "Filter Beta flags unsupported by Bedrock": "Bedrock が未対応の Beta フラグを除外",
+    "Drop anthropic-beta flags and cache_control scope that AWS Bedrock rejects, so the channel can share traffic with Claude Max": "AWS Bedrock が受け付けない anthropic-beta フラグと cache_control scope を除去し、Claude Max と同じチャネルを共用できるようにします"
   }
 }

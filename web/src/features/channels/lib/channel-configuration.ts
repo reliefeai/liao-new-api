@@ -76,6 +76,7 @@ const CONFIGURATION_BLOCKS = {
       'allow_inference_geo',
       'allow_speed',
       'claude_beta_query',
+      'filter_bedrock_beta',
     ],
   },
   extraSettings: {
@@ -169,7 +170,8 @@ export function getChannelConfigurationState(
           values.allow_include_obfuscation)) ||
       (claudePassthrough &&
         (values.allow_speed ||
-          (values.type === 14 && values.claude_beta_query)))
+          (values.type === 14 &&
+            (values.claude_beta_query || values.filter_bedrock_beta))))
     ),
     extraSettings: Boolean(
       values.proxy?.trim() ||

@@ -7,7 +7,6 @@ import (
 
 	kitutil "github.com/QuantumNous/new-api/relaykit/relayconvert/kitutil"
 	"github.com/gin-gonic/gin/binding"
-	gojson "github.com/goccy/go-json"
 )
 
 type RawMessage = json.RawMessage
@@ -18,19 +17,23 @@ type RawMessage = json.RawMessage
 // follows. Injected from init() rather than main() so tests run on the same
 // engine as production: common is imported by virtually every root package
 // and test binary, while main() never executes under `go test`.
-// liao: 引擎换成 goccy/go-json（性能），Valid 仍走标准库。
+// liao: 引擎保持标准库。历史上曾换成 sonic / goccy-go-json 换性能，但 goccy 用
+// go:linkname 直接调用 runtime 私有函数（runtime.mapiterinit、reflect.maplen），
+// 与 Go 1.26 的栈增长机制不兼容，会触发 fatal error: invalid pointer found on
+// stack 直接终止进程（见 2026-10 上游升级 Go 1.26 后的复现）。标准库随 Go 版本
+// 演进，是唯一不需要为每次 Go 升级重新验证的选项。
 type hostJSONCodec struct{}
 
 func (hostJSONCodec) Marshal(v any) ([]byte, error) {
-	return gojson.Marshal(v)
+	return json.Marshal(v)
 }
 
 func (hostJSONCodec) Unmarshal(data []byte, v any) error {
-	return gojson.Unmarshal(data, v)
+	return json.Unmarshal(data, v)
 }
 
 func (hostJSONCodec) Decode(r io.Reader, v any) error {
-	return gojson.NewDecoder(r).Decode(v)
+	return json.NewDecoder(r).Decode(v)
 }
 
 func (hostJSONCodec) Valid(data []byte) bool {

@@ -310,6 +310,7 @@ const SENSITIVE_FORM_FIELDS = [
   'allow_inference_geo',
   'allow_speed',
   'claude_beta_query',
+  'filter_bedrock_beta',
   'ollama_openai_chat',
   'disable_task_polling_sleep',
   'upstream_model_update_check_enabled',
@@ -3080,6 +3081,35 @@ export function ChannelMutateDrawer({
                 />
               )}
             </>
+          )}
+
+          {/* liao: AWS (33) channels keep an existing value on save; the switch is Anthropic-only like the classic UI */}
+          {currentType === 14 && (
+            <FormField
+              control={form.control}
+              name='filter_bedrock_beta'
+              render={({ field }) => (
+                <FormItem className='flex items-center justify-between gap-3 px-4 py-3'>
+                  <div className='space-y-0.5'>
+                    <FormLabel className='text-sm'>
+                      {t('Filter Beta flags unsupported by Bedrock')}
+                    </FormLabel>
+                    <FormDescription>
+                      {t(
+                        'Drop anthropic-beta flags and cache_control scope that AWS Bedrock rejects, so the channel can share traffic with Claude Max'
+                      )}
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      disabled={sensitiveLocked}
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
           )}
         </div>
       </fieldset>

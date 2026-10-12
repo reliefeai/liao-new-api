@@ -6867,6 +6867,8 @@
     "Zhipu": "智谱",
     "Zhipu GLM": "智谱GLM",
     "Zhipu V4": "智谱 V4",
-    "Zoom": "缩放"
+    "Zoom": "缩放",
+    "Filter Beta flags unsupported by Bedrock": "过滤 Bedrock 不支持的 Beta 标志",
+    "Drop anthropic-beta flags and cache_control scope that AWS Bedrock rejects, so the channel can share traffic with Claude Max": "自动丢弃 AWS Bedrock 不支持的 anthropic-beta 标志与 cache_control scope，便于与 Claude Max 共用同一渠道"
   }
 }
