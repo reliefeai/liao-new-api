@@ -1,0 +1,68 @@
+name: Go TLS security build
+
+on:
+  push:
+    branches:
+      - security/go-tls-20261021
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - name: Build with patched Go toolchain
+        run: docker build --network host --pull --target builder2 -t newapi-go-build .
+      - name: Run backend tests
+        run: docker run --rm --entrypoint sh newapi-go-build -ec 'test "$(go env GOVERSION)" = go1.26.10; GOTOOLCHAIN=local go test ./...'
+      - name: Verify compromised certificate chains are rejected
+        run: |
+          cat > "$RUNNER_TEMP/tls-check.go" <<'GO'
+          package main
+          import (
+            "crypto/tls"
+            "crypto/x509"
+            "errors"
+            "fmt"
+            "net"
+            "os"
+            "time"
+          )
+          func main() {
+            failed := false
+            for _, host := range []string{"example.com", "dv-g3b-emudhra.we-have-a-problem.com", "dv-g3b-aaa-emudhra.we-have-a-problem.com"} {
+              c, err := tls.DialWithDialer(&net.Dialer{Timeout: 15*time.Second}, "tcp", host+":443", &tls.Config{ServerName: host, MinVersion: tls.VersionTLS12})
+              if c != nil { c.Close() }
+              wantReject := host != "example.com"
+              var unknown x509.UnknownAuthorityError
+              var invalid x509.CertificateInvalidError
+              rejected := errors.As(err, &unknown) || errors.As(err, &invalid)
+              ok := (!wantReject && err == nil) || (wantReject && rejected)
+              fmt.Printf("%s ok=%v error=%v\n", host, ok, err)
+              failed = failed || !ok
+            }
+            if failed { os.Exit(1) }
+          }
+          GO
+          docker run --rm -v "$RUNNER_TEMP/tls-check.go:/tmp/tls-check.go:ro" --entrypoint go newapi-go-build run /tmp/tls-check.go
+      - name: Build deployable image
+        run: |
+          docker build --network host \
+            --label org.opencontainers.image.revision="$GITHUB_SHA" \
+            --label org.opencontainers.image.source="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" \
+            -t liao-newapi-ck:2.0.4 .
+          docker image inspect liao-newapi-ck:2.0.4 --format '{{.Id}}'
+          docker save liao-newapi-ck:2.0.4 | gzip > "$RUNNER_TEMP/newapi-go1.26.10.tar.gz"
+          sha256sum "$RUNNER_TEMP/newapi-go1.26.10.tar.gz" > "$RUNNER_TEMP/newapi-go1.26.10.sha256"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: newapi-go1.26.10-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/newapi-go1.26.10.tar.gz
+            ${{ runner.temp }}/newapi-go1.26.10.sha256
+          compression-level: 0
+          retention-days: 14
